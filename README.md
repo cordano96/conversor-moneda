@@ -90,7 +90,7 @@ java ConversorMonedas
 ## 📁 Estructura del proyecto
 
 ```
-conversor-monedas/
+conversor-moneda/
 │
 └── ConversorMonedas.java
 ```
