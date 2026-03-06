@@ -1,0 +1,97 @@
+import java.util.Scanner;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class ConversorMonedas {
+
+    static String apiKey = "fb33e63a9de99707cae70785";
+
+    public static void main(String[] args) {
+
+        Scanner teclado = new Scanner(System.in);
+        int opcion = 0;
+
+        System.out.println("*************************************");
+        System.out.println("   Bienvenido al Conversor de Monedas");
+        System.out.println("*************************************");
+
+        while (opcion != 7) {
+
+            System.out.println("\nElija una opcion:");
+            System.out.println("1) Dolar => Peso Argentino");
+            System.out.println("2) Peso Argentino => Dolar");
+            System.out.println("3) Dolar => Real Brasileno");
+            System.out.println("4) Real Brasileno => Dolar");
+            System.out.println("5) Dolar => Peso Colombiano");
+            System.out.println("6) Peso Colombiano => Dolar");
+            System.out.println("7) Salir");
+            System.out.print("Opcion: ");
+
+            opcion = teclado.nextInt();
+
+            if (opcion == 7) {
+                System.out.println("Gracias por usar el conversor. Adios!");
+                break;
+            }
+
+            System.out.print("Ingresa el valor que deseas convertir: ");
+            double valor = teclado.nextDouble();
+
+            if (opcion == 1) {
+                convertir("USD", "ARS", valor);
+            } else if (opcion == 2) {
+                convertir("ARS", "USD", valor);
+            } else if (opcion == 3) {
+                convertir("USD", "BRL", valor);
+            } else if (opcion == 4) {
+                convertir("BRL", "USD", valor);
+            } else if (opcion == 5) {
+                convertir("USD", "COP", valor);
+            } else if (opcion == 6) {
+                convertir("COP", "USD", valor);
+            } else {
+                System.out.println("Opcion no valida, intenta de nuevo.");
+            }
+        }
+
+        teclado.close();
+    }
+
+    static void convertir(String monedaOrigen, String monedaDestino, double valor) {
+
+        try {
+            String url = "https://v6.exchangerate-api.com/v6/" + apiKey + "/pair/" + monedaOrigen + "/" + monedaDestino + "/" + valor;
+
+            HttpClient cliente = HttpClient.newHttpClient();
+
+            HttpRequest peticion = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+
+            HttpResponse<String> respuesta = cliente.send(peticion, HttpResponse.BodyHandlers.ofString());
+
+            String cuerpo = respuesta.body();
+
+            int indice = cuerpo.indexOf("\"conversion_result\":");
+            if (indice != -1) {
+                String resto = cuerpo.substring(indice + 20);
+                int fin = resto.indexOf("}");
+                if (resto.indexOf(",") < fin && resto.indexOf(",") != -1) {
+                    fin = resto.indexOf(",");
+                }
+                double resultado = Double.parseDouble(resto.substring(0, fin).trim());
+
+                System.out.println("\nEl valor de " + valor + " [" + monedaOrigen + "]"
+                        + " corresponde al valor final de =>>> "
+                        + resultado + " [" + monedaDestino + "]");
+            } else {
+                System.out.println("No se pudo obtener el resultado. Revisa tu API key.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ocurrio un error: " + e.getMessage());
+        }
+    }
+}
